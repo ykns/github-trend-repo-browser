@@ -1,6 +1,18 @@
 {
-  "extends": ["react-app"],
+  "extends": [
+    "react-app"
+  ],
   "rules": {
-    "semi": [2, "always"]
+    "semi": [
+      2,
+      "always"
+    ],
+    "quotes": [
+      2,
+      "single",
+      {
+        "avoidEscape": true
+      }
+    ]
   }
 }

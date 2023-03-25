@@ -1,34 +1,60 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import '@picocss/pico';
+import { Fragment, useEffect } from 'react';
+import { useInfiniteQueryTrendingReposCreatedFrom } from './query';
+import { useInView } from 'react-intersection-observer';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const lastNumberOfDays = 7;
+  const {
+    data,
+    status,
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQueryTrendingReposCreatedFrom(lastNumberOfDays, 100);
+  const { ref: loadingStatusRef, inView: loadingStatusInView } = useInView();
+  useEffect(() => {
+    if (loadingStatusInView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [loadingStatusInView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    <>
+      <header className="container">
+        <h1>Trending GitHub Repos</h1>
+      </header>
+      <main className='container'>
+        {status === 'error' ? (
+          <span>Error: {(error as any).message}</span>
+        ) : (
+            <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Stars</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data?.pages.map(p => (
+                    <Fragment key={p.pageIndex}>
+                      {p.results.map(result => (
+                        <tr key={result.id}>
+                          <td>{result.stargazers_count}</td>
+                          <td>{<a href={result.html_url}>{result.name}</a>}</td>
+                          <td>{result.description}</td>
+                        </tr>
+                      ))}
+                    </Fragment>
+                  ))}
+                  <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
+                </tbody>
+          </table>
+        )}
+      </main>
+    </>
   );
 }
 
