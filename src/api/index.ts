@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { formatDateAsISO, subtractDays } from '../utils/date';
 
-export type GithubRepoSearchResult = {
+export type GithubRepo = {
   id: number;
   name: string;
   description: string;
@@ -11,7 +11,7 @@ export type GithubRepoSearchResult = {
 
 export type GithubRepoSearchPage = {
   pageIndex: number;
-  results: GithubRepoSearchResult[];
+  results: GithubRepo[];
 }
 
 export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, reposPerPage: number) {
@@ -21,7 +21,7 @@ export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, re
     const response = await axios.get<{
       total_count: number;
       incomplete_results: boolean;
-      items: GithubRepoSearchResult[];
+      items: GithubRepo[];
     }>(url, {
       headers: {
         Authorization: `token ${import.meta.env.VITE_GITHUB_PAT}`,

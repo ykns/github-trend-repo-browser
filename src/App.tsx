@@ -1,7 +1,10 @@
 import '@picocss/pico';
-import { Fragment, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInfiniteQueryTrendingReposCreatedFrom } from './query';
 import { useInView } from 'react-intersection-observer';
+import { GithubRepo } from './api';
+import { setFavouriteRepos, getFavouriteRepos, SavedFavouriteGithubRepos } from './utils/storage';
+import { GithubReposTable } from './components/github-repos-table';
 
 function App() {
   const lastNumberOfDays = 7;
@@ -19,6 +22,23 @@ function App() {
       fetchNextPage();
     }
   }, [loadingStatusInView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+  const [savedRepoSearchResults, setSavedRepoSearchResults] = useState<SavedFavouriteGithubRepos>(getFavouriteRepos() ?? {});
+  function handleAddToSavedFavouriteGithubRepos(repo: GithubRepo) {
+    const newSavedRepoSearchResults = { ...savedRepoSearchResults, [repo.id]: repo };
+    setSavedRepoSearchResults(newSavedRepoSearchResults);
+    setFavouriteRepos(newSavedRepoSearchResults);
+  }
+  function handleRemoveFromSavedFavouriteGithubRepos(repo: GithubRepo) {
+    const newSavedRepoSearchResults = { ...savedRepoSearchResults };
+    delete newSavedRepoSearchResults[repo.id];
+    setSavedRepoSearchResults(newSavedRepoSearchResults);
+    setFavouriteRepos(newSavedRepoSearchResults);
+  }
+  type TabType = 'all' | 'fav';
+  const [tab, setTab] = useState<TabType>('all');
+  function handleSelectedTabChange(tab: 'all' | 'fav') {
+    setTab(tab);
+  }
 
   return (
     <>
@@ -26,32 +46,34 @@ function App() {
         <h1>Trending GitHub Repos</h1>
       </header>
       <main className='container'>
-        {status === 'error' ? (
-          <span>Error: {(error as any).message}</span>
-        ) : (
-            <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Stars</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data?.pages.map(p => (
-                    <Fragment key={p.pageIndex}>
-                      {p.results.map(result => (
-                        <tr key={result.id}>
-                          <td>{result.stargazers_count}</td>
-                          <td>{<a href={result.html_url}>{result.name}</a>}</td>
-                          <td>{result.description}</td>
-                        </tr>
-                      ))}
-                    </Fragment>
-                  ))}
-                  <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
-                </tbody>
-          </table>
+      <select onChange={(event) => handleSelectedTabChange(event.target.value as TabType)}>
+        <option value="all">All</option>
+        <option value="fav">Favourites</option>
+      </select>
+        {tab === 'all' ? (
+          <div>
+            {status === 'error' ? (
+              <span>Error: {(error as any).message}</span>
+            ) : (
+              <GithubReposTable data={data}
+                hasFavorite={(repoId) => savedRepoSearchResults[repoId] ? true : false}
+                addFavourite={handleAddToSavedFavouriteGithubRepos}
+                removeFavourite={handleRemoveFromSavedFavouriteGithubRepos}>
+                <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
+              </GithubReposTable>
+            )}
+          </div>) : ( 
+          <div>
+              <GithubReposTable data={{
+                pages: [{
+                  pageIndex: 0,
+                  results: Object.values(savedRepoSearchResults).sort((a, b) => b.stargazers_count - a.stargazers_count)
+                }]
+            }}
+              hasFavorite={(repoId) => savedRepoSearchResults[repoId] ? true : false}
+              addFavourite={handleAddToSavedFavouriteGithubRepos}
+              removeFavourite={handleRemoveFromSavedFavouriteGithubRepos} />
+          </div>
         )}
       </main>
     </>
