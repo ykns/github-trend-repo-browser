@@ -4,7 +4,7 @@ import { useInfiniteQueryTrendingReposCreatedFrom } from './query';
 import { useInView } from 'react-intersection-observer';
 import { GithubRepo } from './api';
 import { setFavouriteRepos, getFavouriteRepos, SavedFavouriteGithubRepos } from './utils/storage';
-import { GithubReposTable } from './components/github-repos-table';
+import { PageResultsTable } from './components/table';
 
 function App() {
   const lastNumberOfDays = 7;
@@ -54,25 +54,74 @@ function App() {
           <div>
             {status === 'error' ? (
               <span>Error: {(error as any).message}</span>
-            ) : (
-              <GithubReposTable data={data}
-                hasFavorite={(repoId) => savedRepoSearchResults[repoId] ? true : false}
-                addFavourite={handleAddToSavedFavouriteGithubRepos}
-                removeFavourite={handleRemoveFromSavedFavouriteGithubRepos}>
+            ) : (data && 
+                <PageResultsTable<GithubRepo>
+                  pages={data.pages}
+                  getIdFn={(item) => item.id.toString()}
+                  columnsDefinitions={[{
+                    label: 'Stars',
+                    width: '10%',
+                    valueFn: (item) => item.stargazers_count.toString()
+                  }, {
+                    label: 'Name',
+                    width: '20%',
+                    childrenFn: (item) => (<a href={item.html_url} target="_blank" rel="noreferrer">{item.name}</a>)
+                  }, {
+                    label: 'Lang',
+                    width: '20%',
+                    valueFn: (item) => item.language,
+                    filterByValue: true
+                  }, {
+                    label: 'Description',
+                    width: '35%',
+                    valueFn: (item) => item.description
+                  }, {
+                    label: 'Actions',
+                    width: '15%',
+                    childrenFn: (item) => (<>
+                      {savedRepoSearchResults[item.id] ?
+                        (<button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>)
+                        : (<button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>)}
+                    </>)
+                  }                  
+                ]}> 
                 <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
-              </GithubReposTable>
+              </PageResultsTable>
             )}
           </div>) : ( 
           <div>
-              <GithubReposTable data={{
-                pages: [{
+            <PageResultsTable<GithubRepo> pages={[{
                   pageIndex: 0,
                   results: Object.values(savedRepoSearchResults).sort((a, b) => b.stargazers_count - a.stargazers_count)
-                }]
-            }}
-              hasFavorite={(repoId) => savedRepoSearchResults[repoId] ? true : false}
-              addFavourite={handleAddToSavedFavouriteGithubRepos}
-              removeFavourite={handleRemoveFromSavedFavouriteGithubRepos} />
+                }]}
+                getIdFn={(item) => item.id.toString()}
+                columnsDefinitions={[{
+                  label: 'Stars',
+                  width: '10%',
+                  valueFn: (item) => item.stargazers_count.toString()
+                }, {
+                  label: 'Name',
+                  width: '20%',
+                  childrenFn: (item) => (<a href={item.html_url} target="_blank" rel="noreferrer">{item.name}</a>)
+                }, {
+                  label: 'Lang',
+                  width: '20%',
+                  valueFn: (item) => item.language,
+                  filterByValue: true
+                }, {
+                  label: 'Description',
+                  width: '35%',
+                  valueFn: (item) => item.description
+                }, {
+                  label: 'Actions',
+                  width: '15%',
+                  childrenFn: (item) => (<>
+                    {savedRepoSearchResults[item.id] ?
+                      (<button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>)
+                      : (<button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>)}
+                  </>)
+                }                  
+              ]}/>
           </div>
         )}
       </main>
