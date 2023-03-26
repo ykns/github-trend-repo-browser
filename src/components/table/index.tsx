@@ -22,7 +22,7 @@ type ColumnOptionsProps = {
 function ColumnOptions({ values, onChange }: ColumnOptionsProps) {
   return (
     <select style={{ marginTop: '1em'}} onChange={(e) => onChange(e.target.value)}>
-      {values.map(v => <option key={v}>{v ? v : '[None]'}</option>)}
+      {values.map(v => <option key={v}>{v ? v : '[None specified]'}</option>)}
     </select>
   );
 }
