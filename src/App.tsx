@@ -42,7 +42,7 @@ function App() {
 
   return (
     <>
-      <header className="container">
+      <header className="container" style={{ textAlign: 'center' }}>
         <h1>Trending GitHub Repos</h1>
       </header>
       <main className='container'>
