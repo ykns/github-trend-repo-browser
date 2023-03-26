@@ -50,7 +50,7 @@ export function GithubReposTable({ data,
           {p.results.map(result => (
             <tr key={result.id}>
               <td>{result.stargazers_count}</td>
-              <td>{<a href={result.html_url}>{result.name}</a>}</td>
+              <td>{<a href={result.html_url} target="_blank">{result.name}</a>}</td>
               <td>{result.description}</td>
               <td>
                 {!hasFavorite(result.id)
