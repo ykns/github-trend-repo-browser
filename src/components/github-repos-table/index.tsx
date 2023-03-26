@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { GithubRepo } from '../../api';
 
 export type TableProps = {
@@ -13,14 +13,29 @@ export type TableProps = {
   removeFavourite: (repo: GithubRepo) => void;
   children?: React.ReactNode;
 }
-
+type LanguageOptionType = string | null | undefined /* special case for all, as `null` can be a valid language option */;
 export function GithubReposTable({ data,
   children,
   hasFavorite,
   addFavourite,
   removeFavourite
 }: TableProps) {
-  return (<table style={{ width: '100%'}}>
+  const [languageOption, setLanguageOption] = useState<LanguageOptionType>(undefined);
+  function handleLanguageOptionChange(newLanguageOption: LanguageOptionType) {
+    setLanguageOption(newLanguageOption);
+  }
+  const languageOptions = data?.pages.flatMap(p => p.results).reduce((acc, curr) => {
+    acc.set(curr.language, curr.language === null ? '[None]' : curr.language);
+    return acc;
+  }, new Map()) ?? new Map();
+
+  const pages = languageOption === undefined ? data?.pages : data?.pages.map(p => ({ pageIndex: p.pageIndex, results: p.results.filter(r => r.language === languageOption)}));
+  
+  return (<>
+  <select onChange={(event) => handleLanguageOptionChange(event.target.value as LanguageOptionType)}>
+      {[...languageOptions.entries()].map(([k, v]) => (<option key={v} value={k}>{v}</option>))}
+  </select>
+  <table style={{ width: '100%'}}>
     <thead>
       <tr>
         <th scope="col" style={{ width: '10%'}}>Stars</th>
@@ -30,7 +45,7 @@ export function GithubReposTable({ data,
       </tr>
     </thead>
     <tbody>
-      {data?.pages.map(p => (
+      {pages?.map(p => (
         <Fragment key={p.pageIndex}>
           {p.results.map(result => (
             <tr key={result.id}>
@@ -48,6 +63,6 @@ export function GithubReposTable({ data,
       ))}
       {children}
     </tbody>
-  </table>);
+  </table></>);
 
 }

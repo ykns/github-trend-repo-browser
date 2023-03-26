@@ -7,6 +7,7 @@ export type GithubRepo = {
   description: string;
   html_url: string;
   stargazers_count: number;
+  language: string | null;
 };
 
 export type GithubRepoSearchPage = {
