@@ -16,9 +16,6 @@ export type GithubRepoSearchPage = {
 }
 
 export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, reposPerPage: number) {
-  const headers = import.meta.env.VITE_GITHUB_PAT ? {
-    Authorization: `token ${import.meta.env.VITE_GITHUB_PAT}`,
-  } : {};
   const from = formatDateAsISO(subtractDays(new Date(), lastNumberOfDays));
   return async function (pageIndex: number): Promise<GithubRepoSearchPage> {
     const url = `https://api.github.com/search/repositories?q=created:%3E${from}&sort=stars&order=desc&page=${pageIndex}&per_page=${reposPerPage}`;
@@ -27,7 +24,9 @@ export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, re
       incomplete_results: boolean;
       items: GithubRepo[];
     }>(url, {
-      headers: headers
+      headers: {
+        ...(import.meta.env.VITE_GITHUB_PAT && { Authorization: `token ${import.meta.env.VITE_GITHUB_PAT}` }),
+      }
     });
     return {
       results: response.data.items,
