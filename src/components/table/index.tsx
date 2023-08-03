@@ -21,10 +21,7 @@ type ColumnOptionsProps = {
 
 function ColumnOptions({ values, onChange }: ColumnOptionsProps) {
   return (
-    <select
-      style={{ marginTop: '1em' }}
-      onChange={(e) => onChange(e.target.value)}
-    >
+    <select style={{ marginTop: '1em' }} onChange={(e) => onChange(e.target.value)}>
       {values.map((v) => (
         <option key={v}>{v ? v : '[None specified]'}</option>
       ))}
@@ -32,12 +29,7 @@ function ColumnOptions({ values, onChange }: ColumnOptionsProps) {
   );
 }
 
-export function PageResultsTable<T>({
-  pages,
-  getIdFn,
-  columnsDefinitions,
-  children,
-}: PageResultTableProps<T>) {
+export function PageResultsTable<T>({ pages, getIdFn, columnsDefinitions, children }: PageResultTableProps<T>) {
   const allColumnsDistinctValues: {
     [k: string]: Set<string | null | undefined>;
   } = columnsDefinitions

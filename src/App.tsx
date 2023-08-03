@@ -3,31 +3,22 @@ import { useEffect, useState } from 'react';
 import { useInfiniteQueryTrendingReposCreatedFrom } from './query';
 import { useInView } from 'react-intersection-observer';
 import { GithubRepo } from './api';
-import {
-  setFavouriteRepos,
-  getFavouriteRepos,
-  SavedFavouriteGithubRepos,
-} from './utils/storage';
+import { setFavouriteRepos, getFavouriteRepos, SavedFavouriteGithubRepos } from './utils/storage';
 import { PageResultsTable } from './components/table';
 
 function App() {
   const lastNumberOfDays = 7;
-  const {
-    data,
-    status,
-    error,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQueryTrendingReposCreatedFrom(lastNumberOfDays, 100);
+  const { data, status, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteQueryTrendingReposCreatedFrom(lastNumberOfDays, 100);
   const { ref: loadingStatusRef, inView: loadingStatusInView } = useInView();
   useEffect(() => {
     if (loadingStatusInView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [loadingStatusInView, fetchNextPage, hasNextPage, isFetchingNextPage]);
-  const [savedRepoSearchResults, setSavedRepoSearchResults] =
-    useState<SavedFavouriteGithubRepos>(getFavouriteRepos() ?? {});
+  const [savedRepoSearchResults, setSavedRepoSearchResults] = useState<SavedFavouriteGithubRepos>(
+    getFavouriteRepos() ?? {}
+  );
   function handleAddToSavedFavouriteGithubRepos(repo: GithubRepo) {
     const newSavedRepoSearchResults = {
       ...savedRepoSearchResults,
@@ -54,11 +45,7 @@ function App() {
         <h1>Trending GitHub Repos</h1>
       </header>
       <main className="container">
-        <select
-          onChange={(event) =>
-            handleSelectedTabChange(event.target.value as TabType)
-          }
-        >
+        <select onChange={(event) => handleSelectedTabChange(event.target.value as TabType)}>
           <option value="all">All</option>
           <option value="fav">Favourites</option>
         </select>
@@ -81,11 +68,7 @@ function App() {
                       label: 'Name',
                       width: '20%',
                       childrenFn: (item) => (
-                        <a
-                          href={item.html_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <a href={item.html_url} target="_blank" rel="noreferrer">
                           {item.name}
                         </a>
                       ),
@@ -107,32 +90,16 @@ function App() {
                       childrenFn: (item) => (
                         <>
                           {savedRepoSearchResults[item.id] ? (
-                            <button
-                              onClick={() =>
-                                handleRemoveFromSavedFavouriteGithubRepos(item)
-                              }
-                            >
-                              Unfav
-                            </button>
+                            <button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>
                           ) : (
-                            <button
-                              onClick={() =>
-                                handleAddToSavedFavouriteGithubRepos(item)
-                              }
-                            >
-                              Fav
-                            </button>
+                            <button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>
                           )}
                         </>
                       ),
                     },
                   ]}
                 >
-                  <tr
-                    key="loadingRow"
-                    ref={loadingStatusRef}
-                    aria-busy={isFetchingNextPage}
-                  />
+                  <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
                 </PageResultsTable>
               )
             )}
@@ -181,21 +148,9 @@ function App() {
                   childrenFn: (item) => (
                     <>
                       {savedRepoSearchResults[item.id] ? (
-                        <button
-                          onClick={() =>
-                            handleRemoveFromSavedFavouriteGithubRepos(item)
-                          }
-                        >
-                          Unfav
-                        </button>
+                        <button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>
                       ) : (
-                        <button
-                          onClick={() =>
-                            handleAddToSavedFavouriteGithubRepos(item)
-                          }
-                        >
-                          Fav
-                        </button>
+                        <button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>
                       )}
                     </>
                   ),
