@@ -1,18 +1,9 @@
 {
+  "plugins": ["prettier"],
   "extends": [
     "react-app"
   ],
   "rules": {
-    "semi": [
-      2,
-      "always"
-    ],
-    "quotes": [
-      2,
-      "single",
-      {
-        "avoidEscape": true
-      }
-    ]
+    "prettier/prettier": "warn"
   }
 }

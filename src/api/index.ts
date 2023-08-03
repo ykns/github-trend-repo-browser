@@ -13,9 +13,12 @@ export type GithubRepo = {
 export type GithubRepoSearchPage = {
   pageIndex: number;
   results: GithubRepo[];
-}
+};
 
-export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, reposPerPage: number) {
+export function createFetchTrendingReposCreatedFrom(
+  lastNumberOfDays: number,
+  reposPerPage: number
+) {
   const from = formatDateAsISO(subtractDays(new Date(), lastNumberOfDays));
   return async function (pageIndex: number): Promise<GithubRepoSearchPage> {
     const url = `https://api.github.com/search/repositories?q=created:%3E${from}&sort=stars&order=desc&page=${pageIndex}&per_page=${reposPerPage}`;
@@ -25,8 +28,10 @@ export function createFetchTrendingReposCreatedFrom(lastNumberOfDays: number, re
       items: GithubRepo[];
     }>(url, {
       headers: {
-        ...(import.meta.env.VITE_GITHUB_PAT && { Authorization: `token ${import.meta.env.VITE_GITHUB_PAT}` }),
-      }
+        ...(import.meta.env.VITE_GITHUB_PAT && {
+          Authorization: `token ${import.meta.env.VITE_GITHUB_PAT}`,
+        }),
+      },
     });
     return {
       results: response.data.items,

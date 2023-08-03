@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { useInfiniteQueryTrendingReposCreatedFrom } from './query';
 import { useInView } from 'react-intersection-observer';
 import { GithubRepo } from './api';
-import { setFavouriteRepos, getFavouriteRepos, SavedFavouriteGithubRepos } from './utils/storage';
+import {
+  setFavouriteRepos,
+  getFavouriteRepos,
+  SavedFavouriteGithubRepos,
+} from './utils/storage';
 import { PageResultsTable } from './components/table';
 
 function App() {
@@ -22,9 +26,13 @@ function App() {
       fetchNextPage();
     }
   }, [loadingStatusInView, fetchNextPage, hasNextPage, isFetchingNextPage]);
-  const [savedRepoSearchResults, setSavedRepoSearchResults] = useState<SavedFavouriteGithubRepos>(getFavouriteRepos() ?? {});
+  const [savedRepoSearchResults, setSavedRepoSearchResults] =
+    useState<SavedFavouriteGithubRepos>(getFavouriteRepos() ?? {});
   function handleAddToSavedFavouriteGithubRepos(repo: GithubRepo) {
-    const newSavedRepoSearchResults = { ...savedRepoSearchResults, [repo.id]: repo };
+    const newSavedRepoSearchResults = {
+      ...savedRepoSearchResults,
+      [repo.id]: repo,
+    };
     setSavedRepoSearchResults(newSavedRepoSearchResults);
     setFavouriteRepos(newSavedRepoSearchResults);
   }
@@ -45,83 +53,155 @@ function App() {
       <header className="container" style={{ textAlign: 'center' }}>
         <h1>Trending GitHub Repos</h1>
       </header>
-      <main className='container'>
-      <select onChange={(event) => handleSelectedTabChange(event.target.value as TabType)}>
-        <option value="all">All</option>
-        <option value="fav">Favourites</option>
-      </select>
+      <main className="container">
+        <select
+          onChange={(event) =>
+            handleSelectedTabChange(event.target.value as TabType)
+          }
+        >
+          <option value="all">All</option>
+          <option value="fav">Favourites</option>
+        </select>
         {tab === 'all' ? (
           <div>
             {status === 'error' ? (
               <span>Error: {(error as any).message}</span>
-            ) : (data && 
+            ) : (
+              data && (
                 <PageResultsTable<GithubRepo>
                   pages={data.pages}
                   getIdFn={(item) => item.id.toString()}
-                  columnsDefinitions={[{
-                    label: 'Stars',
-                    width: '10%',
-                    valueFn: (item) => item.stargazers_count.toString()
-                  }, {
-                    label: 'Name',
-                    width: '20%',
-                    childrenFn: (item) => (<a href={item.html_url} target="_blank" rel="noreferrer">{item.name}</a>)
-                  }, {
-                    label: 'Lang',
-                    width: '20%',
-                    valueFn: (item) => item.language,
-                    filterByValue: true
-                  }, {
-                    label: 'Description',
-                    width: '35%',
-                    valueFn: (item) => item.description
-                  }, {
-                    label: 'Actions',
-                    width: '15%',
-                    childrenFn: (item) => (<>
-                      {savedRepoSearchResults[item.id] ?
-                        (<button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>)
-                        : (<button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>)}
-                    </>)
-                  }                  
-                ]}> 
-                <tr key="loadingRow" ref={loadingStatusRef} aria-busy={isFetchingNextPage} />
-              </PageResultsTable>
+                  columnsDefinitions={[
+                    {
+                      label: 'Stars',
+                      width: '10%',
+                      valueFn: (item) => item.stargazers_count.toString(),
+                    },
+                    {
+                      label: 'Name',
+                      width: '20%',
+                      childrenFn: (item) => (
+                        <a
+                          href={item.html_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {item.name}
+                        </a>
+                      ),
+                    },
+                    {
+                      label: 'Lang',
+                      width: '20%',
+                      valueFn: (item) => item.language,
+                      filterByValue: true,
+                    },
+                    {
+                      label: 'Description',
+                      width: '35%',
+                      valueFn: (item) => item.description,
+                    },
+                    {
+                      label: 'Actions',
+                      width: '15%',
+                      childrenFn: (item) => (
+                        <>
+                          {savedRepoSearchResults[item.id] ? (
+                            <button
+                              onClick={() =>
+                                handleRemoveFromSavedFavouriteGithubRepos(item)
+                              }
+                            >
+                              Unfav
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleAddToSavedFavouriteGithubRepos(item)
+                              }
+                            >
+                              Fav
+                            </button>
+                          )}
+                        </>
+                      ),
+                    },
+                  ]}
+                >
+                  <tr
+                    key="loadingRow"
+                    ref={loadingStatusRef}
+                    aria-busy={isFetchingNextPage}
+                  />
+                </PageResultsTable>
+              )
             )}
-          </div>) : ( 
+          </div>
+        ) : (
           <div>
-            <PageResultsTable<GithubRepo> pages={[{
+            <PageResultsTable<GithubRepo>
+              pages={[
+                {
                   pageIndex: 0,
-                  results: Object.values(savedRepoSearchResults).sort((a, b) => b.stargazers_count - a.stargazers_count)
-                }]}
-                getIdFn={(item) => item.id.toString()}
-                columnsDefinitions={[{
+                  results: Object.values(savedRepoSearchResults).sort(
+                    (a, b) => b.stargazers_count - a.stargazers_count
+                  ),
+                },
+              ]}
+              getIdFn={(item) => item.id.toString()}
+              columnsDefinitions={[
+                {
                   label: 'Stars',
                   width: '10%',
-                  valueFn: (item) => item.stargazers_count.toString()
-                }, {
+                  valueFn: (item) => item.stargazers_count.toString(),
+                },
+                {
                   label: 'Name',
                   width: '20%',
-                  childrenFn: (item) => (<a href={item.html_url} target="_blank" rel="noreferrer">{item.name}</a>)
-                }, {
+                  childrenFn: (item) => (
+                    <a href={item.html_url} target="_blank" rel="noreferrer">
+                      {item.name}
+                    </a>
+                  ),
+                },
+                {
                   label: 'Lang',
                   width: '20%',
                   valueFn: (item) => item.language,
-                  filterByValue: true
-                }, {
+                  filterByValue: true,
+                },
+                {
                   label: 'Description',
                   width: '35%',
-                  valueFn: (item) => item.description
-                }, {
+                  valueFn: (item) => item.description,
+                },
+                {
                   label: 'Actions',
                   width: '15%',
-                  childrenFn: (item) => (<>
-                    {savedRepoSearchResults[item.id] ?
-                      (<button onClick={() => handleRemoveFromSavedFavouriteGithubRepos(item)}>Unfav</button>)
-                      : (<button onClick={() => handleAddToSavedFavouriteGithubRepos(item)}>Fav</button>)}
-                  </>)
-                }                  
-              ]}/>
+                  childrenFn: (item) => (
+                    <>
+                      {savedRepoSearchResults[item.id] ? (
+                        <button
+                          onClick={() =>
+                            handleRemoveFromSavedFavouriteGithubRepos(item)
+                          }
+                        >
+                          Unfav
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleAddToSavedFavouriteGithubRepos(item)
+                          }
+                        >
+                          Fav
+                        </button>
+                      )}
+                    </>
+                  ),
+                },
+              ]}
+            />
           </div>
         )}
       </main>
